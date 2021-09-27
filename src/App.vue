@@ -11,6 +11,13 @@
             :url="mapConfig.url"
             :bounds="mapConfig.bounds"
           ></l-image-overlay>
+          <l-circle
+            :lat-lng="safeConfig.pos"
+            :radius="safeConfig.r"
+            :stroke="false"
+            fillColor="#fff"
+            :fillOpacity="0.5"
+          />
           <l-polygon
             :lat-lngs="getPoisonLatLngs"
             :stroke="false"
@@ -20,20 +27,32 @@
         </l-map>
       </div>
       <div class="slider-wrapper">
-        <el-slider :min="0" :max="100" :step="1"></el-slider>
+        <el-slider
+          :min="sliderConfig.min"
+          :max="sliderConfig.max"
+          :step="sliderConfig.step"
+          v-model="sliderValue"
+        ></el-slider>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { LMap, LImageOverlay, LPolygon } from 'vue2-leaflet'
+import { LMap, LImageOverlay, LPolygon, LCircle } from 'vue2-leaflet'
+import { onGenCirclePoints, onLerp } from './utils'
 
 export default {
   components: {
     LMap,
     LImageOverlay,
-    LPolygon
+    LPolygon,
+    LCircle
+  },
+  data() {
+    return {
+      sliderValue: 0
+    }
   },
   created() {
     // eslint-disable-next-line no-undef
@@ -55,19 +74,54 @@ export default {
       centerX: 0,
       centerY: 0
     }
+    this.poisonConfig = {
+      outerR: 800 * this.mapScale,
+      innerR: 100 * this.mapScale,
+      outerPos: {
+        x: 0 * this.mapScale,
+        y: 0 * this.mapScale
+      },
+      innerPos: {
+        x: 300 * this.mapScale,
+        y: 300 * this.mapScale
+      }
+    }
+    this.safeConfig = {
+      r: this.poisonConfig.innerR,
+      pos: [this.poisonConfig.innerPos.x, this.poisonConfig.innerPos.y]
+    }
+    this.sliderConfig = {
+      min: 0,
+      max: 100,
+      step: 1
+    }
   },
   computed: {
     getPoisonLatLngs() {
+      // return (points) => this.onPolygonPoints(points)
+      return this.onPolygonPoints(this.onLerpPoints(this.sliderValue))
+    }
+  },
+  methods: {
+    onLerpPoints(sliderValue) {
+      const { outerR, innerR, outerPos, innerPos } = this.poisonConfig
+      const { min, max } = this.sliderConfig
+      const co = Math.min((sliderValue - min) / (max - min), 1)
+      const r = onLerp(outerR, innerR, co)
+      const x = onLerp(outerPos.x, innerPos.x, co)
+      const y = onLerp(outerPos.y, innerPos.y, co)
+      return onGenCirclePoints(r, { x, y })
+    },
+    onPolygonPoints(points = []) {
       return [
+        [846 * this.mapScale, -1464 * this.mapScale],
+        ...points,
         [846 * this.mapScale, -1464 * this.mapScale],
         [846 * this.mapScale, 1464 * this.mapScale],
         [-846 * this.mapScale, 1464 * this.mapScale],
         [-846 * this.mapScale, -1464 * this.mapScale]
       ]
     }
-  },
-  methods: {
-    onLerpPoints() {}
   }
 }
 </script>
