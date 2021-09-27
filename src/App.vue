@@ -11,6 +11,12 @@
             :url="mapConfig.url"
             :bounds="mapConfig.bounds"
           ></l-image-overlay>
+          <l-polygon
+            :lat-lngs="getPoisonLatLngs"
+            :stroke="false"
+            fillColor="#5F22C1"
+            :fillOpacity="0.5"
+          ></l-polygon>
         </l-map>
       </div>
       <div class="slider-wrapper">
@@ -21,12 +27,13 @@
 </template>
 
 <script>
-import { LMap, LImageOverlay } from 'vue2-leaflet'
+import { LMap, LImageOverlay, LPolygon } from 'vue2-leaflet'
 
 export default {
   components: {
     LMap,
-    LImageOverlay
+    LImageOverlay,
+    LPolygon
   },
   created() {
     // eslint-disable-next-line no-undef
@@ -48,6 +55,19 @@ export default {
       centerX: 0,
       centerY: 0
     }
+  },
+  computed: {
+    getPoisonLatLngs() {
+      return [
+        [846 * this.mapScale, -1464 * this.mapScale],
+        [846 * this.mapScale, 1464 * this.mapScale],
+        [-846 * this.mapScale, 1464 * this.mapScale],
+        [-846 * this.mapScale, -1464 * this.mapScale]
+      ]
+    }
+  },
+  methods: {
+    onLerpPoints() {}
   }
 }
 </script>
