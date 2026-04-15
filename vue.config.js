@@ -1,3 +1,4 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/pubg-poison/' : ''
+  // publicPath: process.env.NODE_ENV === 'production' ? '/pubg-poison/' : ''
+  publicPath: '/'
 }
